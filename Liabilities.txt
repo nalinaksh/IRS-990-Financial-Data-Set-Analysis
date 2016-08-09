@@ -1,0 +1,57 @@
+CREATE EXTERNAL TABLE irs
+(
+Name STRING, 
+BusinessName STRING, 
+ReturnType STRING,
+State STRING,
+TotalLiabilitiesEOY_IRS990 BIGINT,
+TotalLiabilitiesEOYAmt_IRS990 BIGINT,
+SumOfTotalLiabilitiesEOY_IRS990EZ BIGINT,
+SumOfTotalLiabilitiesGrpEOYAmt_IRS990EZ BIGINT,
+TotalLiabilitiesEOY_IRS990PF BIGINT,
+TotalLiabilitiesEOYAmt_IRS990PF BIGINT 
+)  
+ROW FORMAT SERDE 'com.ibm.spss.hive.serde2.xml.XmlSerDe'
+WITH SERDEPROPERTIES (
+"column.xpath.Name"="/*[local-name()='Return']/*[local-name()='ReturnHeader']/*[local-name()='Filer']/*[local-name()='Name']/*[local-name()='BusinessNameLine1']/text()",
+"column.xpath.BusinessName"="/*[local-name()='Return']/*[local-name()='ReturnHeader']/*[local-name()='Filer']/*[local-name()='BusinessName']/*[local-name()='BusinessNameLine1']/text()",
+"column.xpath.State"="/*[local-name()='Return']/*[local-name()='ReturnHeader']/*[local-name()='Filer']/*[local-name()='USAddress']/*[local-name()='State']/text()",
+"column.xpath.ReturnType"="/*[local-name()='Return']/*[local-name()='ReturnHeader']/*[local-name()='ReturnType']/text()",
+"column.xpath.TotalLiabilitiesEOY_IRS990"="/*[local-name()='Return']/*[local-name()='ReturnData']/*[local-name()='IRS990']/*[local-name()='TotalLiabilitiesEOY']/text()",
+"column.xpath.TotalLiabilitiesEOYAmt_IRS990"="/*[local-name()='Return']/*[local-name()='ReturnData']/*[local-name()='IRS990']/*[local-name()='TotalLiabilitiesEOYAmt']/text()",
+"column.xpath.SumOfTotalLiabilitiesEOY_IRS990EZ"="/*[local-name()='Return']/*[local-name()='ReturnData']/*[local-name()='IRS990EZ']/*[local-name()='SumOfTotalLiabilities']/*[local-name()='EOY']/text()",
+"column.xpath.SumOfTotalLiabilitiesGrpEOYAmt_IRS990EZ"="/*[local-name()='Return']/*[local-name()='ReturnData']/*[local-name()='IRS990EZ']/*[local-name()='SumOfTotalLiabilitiesGrp']/*[local-name()='EOYAmt']/text()",
+"column.xpath.TotalLiabilitiesEOY_IRS990PF"="/*[local-name()='Return']/*[local-name()='ReturnData']/*[local-name()='IRS990PF']/*[local-name()='BalanceSheets']/*[local-name()='TotalLiabilitiesEOY']/text()",
+"column.xpath.TotalLiabilitiesEOYAmt_IRS990PF"="/*[local-name()='Return']/*[local-name()='ReturnData']/*[local-name()='IRS990PF']/*[local-name()='Form990PFBalanceSheetsGrp']/*[local-name()='TotalLiabilitiesEOYAmt']/text()"
+)
+STORED AS
+INPUTFORMAT 'com.ibm.spss.hive.serde2.xml.XmlInputFormat'
+OUTPUTFORMAT 'org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat'
+LOCATION 'hdfs:///data/'
+TBLPROPERTIES (
+"xmlinput.start"="<Return ",
+"xmlinput.end"="</Return>"
+);
+
+LOAD DATA INPATH 'hdfs:///data' OVERWRITE INTO TABLE irs;
+
+
+SELECT State, SUM(NVL(TotalLiabilitiesEOY_IRS990, CAST(0 AS BIGINT))), SUM(NVL(TotalLiabilitiesEOYAmt_IRS990, CAST(0 AS BIGINT))), SUM(NVL(SumOfTotalLiabilitiesEOY_IRS990EZ, CAST(0 AS BIGINT))), SUM(NVL(SumOfTotalLiabilitiesGrpEOYAmt_IRS990EZ, CAST(0 AS BIGINT))), SUM(NVL(TotalLiabilitiesEOY_IRS990PF, CAST(0 AS BIGINT))), SUM(NVL(TotalLiabilitiesEOYAmt_IRS990PF, CAST(0 AS BIGINT))), (SUM(NVL(TotalLiabilitiesEOY_IRS990, CAST(0 AS BIGINT))) + SUM(NVL(TotalLiabilitiesEOYAmt_IRS990, CAST(0 AS BIGINT))) + SUM(NVL(SumOfTotalLiabilitiesEOY_IRS990EZ, CAST(0 AS BIGINT))) + SUM(NVL(SumOfTotalLiabilitiesGrpEOYAmt_IRS990EZ, CAST(0 AS BIGINT))) + SUM(NVL(TotalLiabilitiesEOY_IRS990PF, CAST(0 AS BIGINT))) + SUM(NVL(TotalLiabilitiesEOYAmt_IRS990PF, CAST(0 AS BIGINT)))) AS TotalLiabilities FROM irs GROUP BY State ORDER BY TotalLiabilities LIMIT 15; 
+
+
+AP	24544	0	0	0	0	0	24544
+AE	919163	341927	34859	0	0	0	1295949
+GU	0	84315571	0	0	0	0	84315571
+VI	139633570	71795172	47762	25433	5704	360094	211867735
+WY	2611675480	1168493308	12555522	3366698	3554542	35006192	3834651742
+PR	6932560448	1786877281	969820	272901	26608	0	8720707058
+ID	9435316816	3036586759	15124191	3951647	6680151	2310234	12499969798
+AK	13966066575	4482313633	8852316	3365490	21977713	20026211	18502601938
+HI	14183671841	4620752250	24936169	6428462	48756402	30410995	18914956119
+VT	14477037952	4423029422	19729657	5656619	46324563	19649812	18991428025
+SD	15743846051	5086836140	26863561	6844648	21549256	11757669	20897697325
+WV	16033841055	5235082494	19281167	8240166	91232669	43542703	21431220254
+MT	16916123033	5545256594	24598184	12679792	22012305	16895791	22537565699
+NV	16649595575	5909518297	10338123	5133302	18060528	6917080	22599562905
+UT	16544282319	6341072563	18367903	5132615	8007581	10819231	22927682212
+Time taken: 1842.677 seconds, Fetched: 15 row(s)

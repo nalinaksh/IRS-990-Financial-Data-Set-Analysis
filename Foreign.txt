@@ -1,0 +1,57 @@
+CREATE EXTERNAL TABLE irs
+(
+Name STRING, 
+BusinessName STRING, 
+ReturnType STRING,
+State STRING,
+ForeignOffice INT,
+ForeignActivities INT,
+ForeignGrants_Total BIGINT,
+ForeignOfficeInd BOOLEAN,
+ForeignActivitiesInd BOOLEAN,
+ForeignGrants_TotalAmt BIGINT      
+)  
+ROW FORMAT SERDE 'com.ibm.spss.hive.serde2.xml.XmlSerDe'
+WITH SERDEPROPERTIES (
+"column.xpath.Name"="/*[local-name()='Return']/*[local-name()='ReturnHeader']/*[local-name()='Filer']/*[local-name()='Name']/*[local-name()='BusinessNameLine1']/text()",
+"column.xpath.BusinessName"="/*[local-name()='Return']/*[local-name()='ReturnHeader']/*[local-name()='Filer']/*[local-name()='BusinessName']/*[local-name()='BusinessNameLine1Txt']/text()",
+"column.xpath.State"="/*[local-name()='Return']/*[local-name()='ReturnHeader']/*[local-name()='Filer']/*[local-name()='USAddress']/*[local-name()='State']/text()",
+"column.xpath.ReturnType"="/*[local-name()='Return']/*[local-name()='ReturnHeader']/*[local-name()='ReturnType']/text()",
+"column.xpath.ForeignOffice"="/*[local-name()='Return']/*[local-name()='ReturnData']/*[local-name()='IRS990']/*[local-name()='ForeignOffice']/text()",
+"column.xpath.ForeignActivities"="/*[local-name()='Return']/*[local-name()='ReturnData']/*[local-name()='IRS990']/*[local-name()='ForeignActivities']/text()",
+"column.xpath.ForeignActivitiesInd"="/*[local-name()='Return']/*[local-name()='ReturnData']/*[local-name()='IRS990']/*[local-name()='ForeignActivitiesInd']/text()",
+"column.xpath.ForeignOfficeInd"="/*[local-name()='Return']/*[local-name()='ReturnData']/*[local-name()='IRS990']/*[local-name()='ForeignOfficeInd']/text()",
+"column.xpath.ForeignGrants_Total"="/*[local-name()='Return']/*[local-name()='ReturnData']/*[local-name()='IRS990']/*[local-name()='ForeignGrants']/*[local-name()='Total']/text()",
+"column.xpath.ForeignGrants_TotalAmt"="/*[local-name()='Return']/*[local-name()='ReturnData']/*[local-name()='IRS990']/*[local-name()='ForeignGrantsGrp']/*[local-name()='TotalAmt']/text()"
+)
+STORED AS
+INPUTFORMAT 'com.ibm.spss.hive.serde2.xml.XmlInputFormat'
+OUTPUTFORMAT 'org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat'
+LOCATION 'hdfs:///data/'
+TBLPROPERTIES (
+"xmlinput.start"="<Return ",
+"xmlinput.end"="</Return>"
+);
+
+LOAD DATA INPATH 'hdfs:///data' OVERWRITE INTO TABLE irs;
+
+SELECT lower(Name), lower(BusinessName), SUM(NVL(ForeignGrants_Total, CAST(0 AS BIGINT))), SUM(NVL(ForeignGrants_TotalAmt, CAST(0 AS BIGINT))), (SUM(NVL(ForeignGrants_Total, CAST(0 AS BIGINT))) + SUM(NVL(ForeignGrants_TotalAmt, CAST(0 AS BIGINT)))) AS FG FROM irs WHERE ForeignOffice = 1 OR ForeignActivities = 1 OR ForeignOfficeInd = true OR ForeignActivitiesInd = true GROUP BY lower(Name), lower(BusinessName) ORDER BY FG DESC LIMIT 15 
+
+
+
+NULL	NULL	0	6576323523	6576323523
+food for the poor inc	NULL	2698414151	0	2698414151
+world vision inc	NULL	1562657330	0	1562657330
+compassion international incorporated	NULL	1176418162	0	1176418162
+united states fund for unicef in kind assistance corporation	NULL	1168123735	0	1168123735
+united states fund for unicef	NULL	749955000	0	749955000
+catholic medical mission board inc	NULL	683946116	0	683946116
+university of toronto	NULL	675438000	0	675438000
+NULL	conference on jewish material claims	0	672381298	672381298
+brother's brother foundation	NULL	649104010	0	649104010
+childfund international usa	NULL	577559039	0	577559039
+pact inc	NULL	471322269	0	471322269
+medecins sans frontieres usa inc	NULL	464120580	0	464120580
+feed the children inc	NULL	458425257	0	458425257
+NULL	save the children federation inc	0	453295101	453295101
+Time taken: 1693.744 seconds, Fetched: 15 row(s)

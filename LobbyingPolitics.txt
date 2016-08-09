@@ -1,0 +1,82 @@
+CREATE EXTERNAL TABLE irs
+(
+Name STRING, 
+BusinessName STRING, 
+ReturnType STRING,
+State STRING,
+Lobbying1_IRS990 INT,
+Lobbying2_IRS990 BOOLEAN,
+Lobbying1_IRS990EZ INT,
+Lobbying2_IRS990EZ BOOLEAN,        
+Politics1_IRS990 INT,
+Politics2_IRS990 BOOLEAN, 
+Politics1_IRS990EZ INT,
+Politics2_IRS990EZ BOOLEAN,
+Legislative1_IRS990PF INT,
+Legislative2_IRS990PF BOOLEAN,
+NetAssets1_IRS990 BIGINT,
+NetAssets2_IRS990 BIGINT,
+NetAssets1_IRS990EZ BIGINT,
+NetAssets2_IRS990EZ BIGINT,
+NetAssets1_IRS990PF BIGINT,
+NetAssets2_IRS990PF BIGINT
+)  
+      
+ROW FORMAT SERDE 'com.ibm.spss.hive.serde2.xml.XmlSerDe'
+WITH SERDEPROPERTIES (
+"column.xpath.Name"="/*[local-name()='Return']/*[local-name()='ReturnHeader']/*[local-name()='Filer']/*[local-name()='Name']/*[local-name()='BusinessNameLine1']/text()",
+"column.xpath.BusinessName"="/*[local-name()='Return']/*[local-name()='ReturnHeader']/*[local-name()='Filer']/*[local-name()='BusinessName']/*[local-name()='BusinessNameLine1Txt']/text()",
+"column.xpath.State"="/*[local-name()='Return']/*[local-name()='ReturnHeader']/*[local-name()='Filer']/*[local-name()='USAddress']/*[local-name()='State']/text()",
+"column.xpath.ReturnType"="/*[local-name()='Return']/*[local-name()='ReturnHeader']/*[local-name()='ReturnType']/text()",
+"column.xpath.Lobbying1_IRS990"="/*[local-name()='Return']/*[local-name()='ReturnData']/*[local-name()='IRS990']/*[local-name()='LobbyingActivities']/text()",
+"column.xpath.Lobbying2_IRS990"="/*[local-name()='Return']/*[local-name()='ReturnData']/*[local-name()='IRS990']/*[local-name()='LobbyingActivitiesInd']/text()",
+"column.xpath.Politics1_IRS990"="/*[local-name()='Return']/*[local-name()='ReturnData']/*[local-name()='IRS990']/*[local-name()='PoliticalActivities']/text()",
+"column.xpath.Politics2_IRS990"="/*[local-name()='Return']/*[local-name()='ReturnData']/*[local-name()='IRS990']/*[local-name()='PoliticalCampaignActyInd']/text()",
+"column.xpath.Lobbying1_IRS990EZ"="/*[local-name()='Return']/*[local-name()='ReturnData']/*[local-name()='IRS990EZ’]/*[local-name()='EngageInLobbyingActivities']/text()",
+"column.xpath.Lobbying2_IRS990EZ"="/*[local-name()='Return']/*[local-name()='ReturnData']/*[local-name()='IRS990EZ’]/*[local-name()='LobbyingActivitiesInd']/text()",
+"column.xpath.Politics1_IRS990EZ"="/*[local-name()='Return']/*[local-name()='ReturnData']/*[local-name()='IRS990EZ’]/*[local-name()='EngagePoliticalCmpgnActivities']/text()",
+"column.xpath.Politics2_IRS990EZ"="/*[local-name()='Return']/*[local-name()='ReturnData']/*[local-name()='IRS990EZ’]/*[local-name()='PoliticalCampaignActyInd']/text()",
+"column.xpath.Legislative1_IRS990PF"="/*[local-name()='Return']/*[local-name()='ReturnData']/*[local-name()='IRS990PF’]/*[local-name()='StatementsRegardingActivities']/*[local-name()='LegislativePoliticalActivities']/text()",
+"column.xpath.Legislative2_IRS990PF"="/*[local-name()='Return']/*[local-name()='ReturnData']/*[local-name()='IRS990PF’]/*[local-name()='StatementsRegardingActyGrp']/*[local-name()='LegislativePoliticalActyInd']/text()",
+"column.xpath.NetAssets1_IRS990"="/*[local-name()='Return']/*[local-name()='ReturnData']/*[local-name()='IRS990']/*[local-name()='NetAssetsOrFundBalancesEOY']/text()",
+"column.xpath.NetAssets2_IRS990"="/*[local-name()='Return']/*[local-name()='ReturnData']/*[local-name()='IRS990']/*[local-name()='NetAssetsOrFundBalancesEOYAmt']/text()",
+"column.xpath.NetAssets1_IRS990EZ"="/*[local-name()='Return']/*[local-name()='ReturnData']/*[local-name()='IRS990EZ']/*[local-name()='NetAssetsOrFundBalancesEOY']/text()",
+"column.xpath.NetAssets2_IRS990EZ"="/*[local-name()='Return']/*[local-name()='ReturnData']/*[local-name()='IRS990EZ']/*[local-name()='NetAssetsOrFundBalancesEOYAmt']/text()",
+"column.xpath.NetAssets1_IRS990PF"="/*[local-name()='Return']/*[local-name()='ReturnData']/*[local-name()='IRS990PF']/*[local-name()='ChangesInNetAssetsFundBalances']/*[local-name()='TotalNetAssetsFundBalancesEOY']",
+"column.xpath.NetAssets2_IRS990PF"="/*[local-name()='Return']/*[local-name()='ReturnData']/*[local-name()='IRS990PF']/*[local-name()='ChgInNetAssetsFundBalancesGrp']/*[local-name()='TotNetAstOrFundBalancesBOYAmt']"
+)
+STORED AS
+INPUTFORMAT 'com.ibm.spss.hive.serde2.xml.XmlInputFormat'
+OUTPUTFORMAT 'org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat'
+LOCATION 'hdfs:///data/'
+TBLPROPERTIES (
+"xmlinput.start"="<Return ",
+"xmlinput.end"="</Return>"
+);
+
+
+LOAD DATA INPATH 'hdfs:///data' OVERWRITE INTO TABLE irs;
+ 
+
+SELECT lower(Name), lower(BusinessName), SUM(NVL(NetAssets1_IRS990, CAST(0 AS BIGINT))), SUM(NVL(NetAssets2_IRS990, CAST(0 AS BIGINT))), SUM(NVL(NetAssets1_IRS990EZ, CAST(0 AS BIGINT))), SUM(NVL(NetAssets2_IRS990EZ, CAST(0 AS BIGINT))), SUM(NVL(NetAssets1_IRS990PF, CAST(0 AS BIGINT))), SUM(NVL(NetAssets2_IRS990PF, CAST(0 AS BIGINT))), (SUM(NVL(NetAssets1_IRS990, CAST(0 AS BIGINT))) + SUM(NVL(NetAssets2_IRS990, CAST(0 AS BIGINT))) + SUM(NVL(NetAssets1_IRS990EZ, CAST(0 AS BIGINT))) + SUM(NVL(NetAssets2_IRS990EZ, CAST(0 AS BIGINT))) + SUM(NVL(NetAssets1_IRS990PF, CAST(0 AS BIGINT))) + SUM(NVL(NetAssets2_IRS990PF, CAST(0 AS BIGINT)))) AS TotalNetAssets FROM irs WHERE Lobbying1_IRS990 = 1 OR Politics1_IRS990 = 1 OR Lobbying1_IRS990EZ = 1 OR Politics1_IRS990EZ = 1 OR Lobbying2_IRS990 = true OR Politics2_IRS990 = true OR Lobbying2_IRS990EZ = true OR Politics2_IRS990EZ = true OR Legislative1_IRS990PF  = 1 OR Legislative2_IRS990PF  = true GROUP BY lower(Name), lower(BusinessName) ORDER BY TotalNetAssets DESC LIMIT 15
+
+
+NULL	NULL	0	640019841218	0	0	0	0	640019841218
+president and fellows of harvard college	NULL	140600450000	0	0	0	0	0	140600450000
+yale university	NULL	100469671271	0	0	0	0	0	100469671271
+northwestern university	NULL	31826636655	0	0	0	0	0	31826636655
+university of notre dame du lac	NULL	29726789252	0	0	0	0	0	29726789252
+nature conservancy	NULL	25908726468	0	0	0	0	0	25908726468
+william marsh rice university	NULL	25660742029	0	0	0	0	0	25660742029
+university of chicago	NULL	23091104000	0	0	0	0	0	23091104000
+trustees of dartmouth college	NULL	19474635259	0	0	0	0	0	19474635259
+johns hopkins university	NULL	17331144000	0	0	0	0	0	17331144000
+duke university	NULL	17087267424	0	0	0	0	0	17087267424
+new york university	NULL	15090909871	0	0	0	0	0	15090909871
+trinity health corporation	NULL	14091755198	0	0	0	0	0	14091755198
+university of pittsburgh	NULL	13581157686	0	0	0	0	0	13581157686
+trustees of the estate of bernice	NULL	12781393138	0	0	0	0	0	12781393138
+Time taken: 2102.204 seconds, Fetched: 15 row(s)
+
+
+
