@@ -27,22 +27,34 @@ Data Analysis
 6. Merge all the files belonging to same year into a single file:
 
    find . /data -iname “2010*.xml” | xargs cat > 2010.xml
+   
    find . /data -iname “2011*.xml” | xargs cat > 2011.xml
+   
    find . /data -iname “2012*.xml” | xargs cat > 2012.xml
+   
    find . /data -iname “2013*.xml” | xargs cat > 2013.xml
+   
    find . /data -iname “2014*.xml” | xargs cat > 2014.xml
+   
    find . /data -iname “2015*.xml” | xargs cat > 2015.xml
+   
    find . /data -iname “2016*.xml” | xargs cat > 2016.xml
 
 
 7. Compress the merged files:
 
    sudo tar cjvf 2010.tar.bz2 2010.xml
+   
    sudo tar cjvf 2011.tar.bz2 2011.xml
+   
    sudo tar cjvf 2012.tar.bz2 2012.xml
+   
    sudo tar cjvf 2013.tar.bz2 2013.xml
+   
    sudo tar cjvf 2014.tar.bz2 2014.xml
+   
    sudo tar cjvf 2015.tar.bz2 2015.xml
+   
    sudo tar cjvf 2016.tar.bz2 2016.xml
 
 8. Download all the compressed files onto your local machine
