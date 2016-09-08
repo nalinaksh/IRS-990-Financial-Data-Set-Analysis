@@ -1,4 +1,8 @@
-# IRS-990
+# IRS-990 Financial Data Set Analysis
+
+Please refer to the link below for more details:
+
+http://nalinakshgaur.blogspot.com/2016/08/irs-990-data-set-analysis.html
 
 Data Analysis
 =======================================================================
